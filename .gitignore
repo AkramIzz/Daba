@@ -1,4 +1,4 @@
 __pycache__/
-store.db
+*.db
 
 thoughts
