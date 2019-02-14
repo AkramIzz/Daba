@@ -1,9 +1,20 @@
 import pickle
 
-class Node:
-   def __init__(self, key, value, left_ref, right_ref):
-      self.key = key
+class StringRef:
+   def __init__(self, value=None, address=None):
       self.value = value
+      self.address = address
+
+   def load(self, bytes):
+      self.value = pickle.loads(bytes)
+   
+   def serialize(self):
+      return pickle.dumps(self.value)
+
+class Node:
+   def __init__(self, key, value_ref, left_ref, right_ref):
+      self.key = key
+      self.value_ref = value_ref
       self.left_ref = left_ref
       self.right_ref = right_ref
 
@@ -13,7 +24,7 @@ class NodeRef:
       self.address = address
    
    def load(self, bytes):
-      key, value, left_addr, right_addr = pickle.loads(bytes)
+      key, value_addr, left_addr, right_addr = pickle.loads(bytes)
  
       left_ref = None
       if left_addr is not None:
@@ -24,7 +35,7 @@ class NodeRef:
 
       self.value = Node(
          key,
-         value,
+         StringRef(address=value_addr),
          left_ref,
          right_ref
       )
@@ -39,7 +50,7 @@ class NodeRef:
          
       return pickle.dumps((
          self.value.key,
-         self.value.value,
+         self.value.value_ref.address,
          left_addr,
          right_addr
       ))
@@ -51,35 +62,35 @@ class BinaryTree:
 
    def set(self, key, value):
       self._retrieve_root()
-      self.root_ref = self._set(self.root_ref, key, value)
+      self.root_ref = self._set(self.root_ref, key, StringRef(value=value))
       self.commit()
 
-   def _set(self, node_ref, key, value):
+   def _set(self, node_ref, key, value_ref):
       new_node = None
       if node_ref is None:
-         new_node = Node(key, value, None, None)
+         new_node = Node(key, value_ref, None, None)
       elif key == node_ref.value.key:
-         new_node = Node(key, value, node_ref.value.left_ref, node_ref.value.right_ref)
+         new_node = Node(key, value_ref, node_ref.value.left_ref, node_ref.value.right_ref)
       elif key > node_ref.value.key:
-         new_node = Node(node_ref.value.key, node_ref.value.value,
+         new_node = Node(node_ref.value.key, node_ref.value.value_ref,
             node_ref.value.left_ref,
-            self._set(self._retrieve(node_ref.value.right_ref), key, value))
+            self._set(self._retrieve(node_ref.value.right_ref), key, value_ref))
       else:
-         new_node = Node(node_ref.value.key, node_ref.value.value,
-            self._set(self._retrieve(node_ref.value.left_ref), key, value),
+         new_node = Node(node_ref.value.key, node_ref.value.value_ref,
+            self._set(self._retrieve(node_ref.value.left_ref), key, value_ref),
             node_ref.value.right_ref)
       return NodeRef(value=new_node)
 
    def get(self, key):
       self._retrieve_root()
-      return self._get(self.root_ref, key)
+      return self._retrieve(self._get(self.root_ref, key)).value
 
    def _get(self, node_ref, key):
       if node_ref is None:
          return None
       
       if key == node_ref.value.key:
-         return node_ref.value.value
+         return node_ref.value.value_ref
       elif key > node_ref.value.key:
          return self._get(self._retrieve(node_ref.value.right_ref), key)
       else:
@@ -115,9 +126,13 @@ class BinaryTree:
       self._prepare_to_store(node_ref.value.left_ref)
       self._prepare_to_store(node_ref.value.right_ref)
 
+      self._store_value_ref(node_ref.value.value_ref)
       self._store_value_ref(node_ref)
       
    def _store_value_ref(self, value_ref):
+      if value_ref.address is not None:
+         return
+
       address = self._storage.write(value_ref.serialize())
       value_ref.address = address
 
