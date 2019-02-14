@@ -7,13 +7,13 @@ class Daba:
       self._tree = BinaryTree(self._storage)
 
    def commit(self):
-      pass
+      self._tree.commit()
 
    def __getitem__(self, key):
-      pass
+      return self._tree.get(key)
 
    def __setitem__(self, key, value):
-      pass
+      self._tree.set(key, value)
 
    def __delitem__(self, key):
       pass
