@@ -28,7 +28,8 @@ class StorageTests:
    # Test root writing and reading
    def test_root_write_read(self):
       data = pickle.dumps([1, 2, 3])
-      address = self.storage.write_root(data)
+      address = self.storage.write(data)
+      self.storage.write_root_address(address)
 
       read_address = self.storage.read_root_address()
       read_data = self.storage.read(read_address)
