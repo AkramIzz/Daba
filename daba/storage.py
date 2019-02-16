@@ -36,14 +36,7 @@ class Storage:
 
    def read_root_address(self):
       self._file.seek(0)
-      # lock on read because this part is mutable
-      # and another process could be changing it
-      # even if we need the root address for read operation
-      prev_locked = True if self._locked else False
-      self.lock()
       address = self._read_int()
-      if not prev_locked:
-         self.unlock()
       
       if address == 0:
          return None
