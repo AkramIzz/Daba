@@ -17,9 +17,9 @@ class LogicalBase:
       self._storage = storage
    
    def set(self, key, value):
-      self._storage.lock()
-
-      self._retrieve_root()
+      if not self._storage.is_locked():
+         self._retrieve_root()
+         self._storage.lock()
       self.root_ref = self._set(self.root_ref, key, ValueRef(value=value))
 
    def get(self, key):
@@ -35,14 +35,15 @@ class LogicalBase:
       self.root_ref = None
 
    def _retrieve_root(self):
-      if self.root_ref is not None:
-         return
       address = self._storage.read_root_address()
       if address is None:
          self.root_ref = None
          return
-      self.root_ref = self.RootRefClass(address=address)
-      self._retrieve(self.root_ref)
+
+      if self.root_ref is None or self.root_ref.address != address:
+         self.root_ref = self.RootRefClass(address=address)
+         self._retrieve(self.root_ref)
+      
 
    def _retrieve(self, value_ref):
       if value_ref is None or value_ref.value is not None:

@@ -68,3 +68,6 @@ class Storage:
       self._locked = False
       self._file.flush()
       portalocker.unlock(self._file)
+
+   def is_locked(self):
+      return self._locked
