@@ -14,24 +14,19 @@ class Storage:
    
    def __init__(self, file):
       self._file = file
+      self._locked = False
       self._ensure_root_block()
    
    def write(self, data):
-      # lock before determining address
-      # to ensure no two processes get the same address
-      self._lock()
       self._file.seek(0, os.SEEK_END)
       address = self._file.tell()
       self._write_int(len(data))
       self._file.write(data)
-      self._unlock()
       return address
 
    def write_root_address(self, address):
       self._file.seek(0)
-      self._lock()
       self._write_int(address)
-      self._unlock()
 
    def read(self, address):
       self._file.seek(address)
@@ -43,22 +38,26 @@ class Storage:
       self._file.seek(0)
       # lock on read because this part is mutable
       # and another process could be changing it
-      self._lock()
+      # even if we need the root address for read operation
+      prev_locked = True if self._locked else False
+      self.lock()
       address = self._read_int()
-      self._unlock()
+      if not prev_locked:
+         self.unlock()
+      
       if address == 0:
          return None
       return address
 
    def _ensure_root_block(self):
+      self.lock()
       self._file.seek(0, os.SEEK_END)
       if self._file.tell() >= self.ROOT_BLOCK_SIZE:
          # root block exists. No furthur actions needed
          return
          
-      self._lock()
       self._file.write(b'\x00' * self.ROOT_BLOCK_SIZE)
-      self._unlock()
+      self.unlock()
 
    def _write_int(self, integer):
       bytes = struct.pack(self.INTEGER_FORMAT, integer)
@@ -68,9 +67,11 @@ class Storage:
       bytes = self._file.read(self.INTEGER_SIZE)
       return struct.unpack(self.INTEGER_FORMAT, bytes)[0]
 
-   def _lock(self):
+   def lock(self):
+      self._locked = True
       portalocker.lock(self._file, portalocker.LOCK_EX)
 
-   def _unlock(self):
+   def unlock(self):
+      self._locked = False
       self._file.flush()
       portalocker.unlock(self._file)

@@ -17,19 +17,22 @@ class LogicalBase:
       self._storage = storage
    
    def set(self, key, value):
+      self._storage.lock()
+
       self._retrieve_root()
       self.root_ref = self._set(self.root_ref, key, ValueRef(value=value))
-      self.commit()
 
    def get(self, key):
       self._retrieve_root()
       return self._retrieve(self._get(self.root_ref, key)).value
 
    def commit(self):
-      if self.root_ref is None or self.root_ref.address is not None:
-         return
-      self._prepare_to_store(self.root_ref)
-      self._storage.write_root_address(self.root_ref.address)
+      if self.root_ref is not None and self.root_ref.address is None:
+         self._prepare_to_store(self.root_ref)
+         self._storage.write_root_address(self.root_ref.address)
+      
+      self._storage.unlock()
+      self.root_ref = None
 
    def _retrieve_root(self):
       if self.root_ref is not None:
