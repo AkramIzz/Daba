@@ -28,13 +28,14 @@ class BinaryTreeTests:
          ("k", "v"),
          ("fiz", "buz")
       ))
+      self.test_delete(("k","foo"), ("value", "bar"))
       self.commit()
       self.init_tree()
       self.test_get((
          ("key", "new_value"),
          ("test", "true"),
-         ("foo", "bar"),
-         ("k", "v"),
+         ("foo", None),
+         ("k", None),
          ("fiz", "buz")
       ))
 
@@ -44,6 +45,12 @@ class BinaryTreeTests:
 
    def commit(self):
       self.tree.commit()
+
+   def test_delete(self, keys, not_keys):
+      for key in keys:
+         assert self.tree.delete(key) == True
+      for key in not_keys:
+         assert self.tree.delete(key) == False
 
    def test_get(self, key_value_pairs):
       for key, value in key_value_pairs:

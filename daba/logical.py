@@ -30,6 +30,16 @@ class LogicalBase:
          return None
       return value_ref.value
 
+   def delete(self, key):
+      if not self._storage.is_locked():
+         self._storage.lock()
+         self._retrieve_root()
+      try:
+         self.root_ref = self._delete(self.root_ref, key)
+      except KeyError:
+         return False
+      return True
+
    def commit(self):
       if self.root_ref is not None and self.root_ref.address is None:
          self._prepare_to_store(self.root_ref)

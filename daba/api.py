@@ -16,4 +16,4 @@ class Daba:
       self._tree.set(key, value)
 
    def __delitem__(self, key):
-      pass
+      self._tree.delete(key)
