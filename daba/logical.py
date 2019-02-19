@@ -24,21 +24,23 @@ class LogicalBase:
 
    def get(self, key):
       if not self._storage.is_locked():
-            self._storage.lock()
             self._retrieve_root()
-            self._storage.unlock()
       return self._retrieve(self._get(self.root_ref, key)).value
 
    def commit(self):
       if self.root_ref is not None and self.root_ref.address is None:
          self._prepare_to_store(self.root_ref)
+         self._storage.lock_root()
          self._storage.write_root_address(self.root_ref.address)
+         self._storage.unlock_root()
       
       self._storage.unlock()
       self.root_ref = None
 
    def _retrieve_root(self):
+      self._storage.lock_root()
       address = self._storage.read_root_address()
+      self._storage.unlock_root()
       if address is None:
          self.root_ref = None
          return

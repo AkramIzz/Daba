@@ -14,6 +14,10 @@ class Storage:
    
    def __init__(self, file):
       self._file = file
+      try:
+         self._root_lock_file = open('root_lock', 'x+b')
+      except:
+         self._root_lock_file = open('root_lock', 'r+b')
       self._locked = False
       self._ensure_root_block()
    
@@ -68,6 +72,13 @@ class Storage:
       self._locked = False
       self._file.flush()
       portalocker.unlock(self._file)
+
+   def lock_root(self):
+      portalocker.lock(self._root_lock_file, portalocker.LOCK_EX)
+
+   def unlock_root(self):
+      self._file.flush()
+      portalocker.unlock(self._root_lock_file)
 
    def is_locked(self):
       return self._locked
