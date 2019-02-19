@@ -18,12 +18,15 @@ class LogicalBase:
    
    def set(self, key, value):
       if not self._storage.is_locked():
-         self._retrieve_root()
          self._storage.lock()
+         self._retrieve_root()
       self.root_ref = self._set(self.root_ref, key, ValueRef(value=value))
 
    def get(self, key):
-      self._retrieve_root()
+      if not self._storage.is_locked():
+            self._storage.lock()
+            self._retrieve_root()
+            self._storage.unlock()
       return self._retrieve(self._get(self.root_ref, key)).value
 
    def commit(self):
