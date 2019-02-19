@@ -79,9 +79,10 @@ class BinaryTree(LogicalBase):
    def print(self):
       self.print_node(self.root_ref)
 
-   def print_node(self, node_ref):
+   def print_node(self, node_ref, preprint=''):
       if node_ref is None:
          return
-      print('key:', node_ref.value.key, ' value:', node_ref.value.value)
-      self.print_node(node_ref.value.left_ref)
-      self.print_node(node_ref.value.right_ref)
+      print(preprint, end=' ')
+      print('key:', node_ref.value.key)
+      self.print_node(self._retrieve(node_ref.value.left_ref), preprint=preprint+' '*4)
+      self.print_node(self._retrieve(node_ref.value.right_ref), preprint=preprint+' '*4)
