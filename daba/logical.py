@@ -25,7 +25,10 @@ class LogicalBase:
    def get(self, key):
       if not self._storage.is_locked():
             self._retrieve_root()
-      return self._retrieve(self._get(self.root_ref, key)).value
+      value_ref = self._retrieve(self._get(self.root_ref, key))
+      if value_ref is None:
+         return None
+      return value_ref.value
 
    def commit(self):
       if self.root_ref is not None and self.root_ref.address is None:
