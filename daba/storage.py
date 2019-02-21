@@ -15,9 +15,9 @@ class Storage:
    def __init__(self, file):
       self._file = file
       try:
-         self._root_lock_file = open('root_lock', 'x+b')
+         self._root_lock_file = open('.'+file.name + '.lock', 'x+b')
       except:
-         self._root_lock_file = open('root_lock', 'r+b')
+         self._root_lock_file = open('.'+file.name + '.lock', 'r+b')
       self._locked = False
       self._ensure_root_block()
    
