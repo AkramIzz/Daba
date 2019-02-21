@@ -31,6 +31,15 @@ class BinaryTreeTests:
       self.test_delete(("k","foo"), ("value", "bar"))
       self.commit()
       self.init_tree()
+      self.set((
+         ("key", "value2"),
+         ("fiz", "buz")
+      ))
+      self.delete((
+         "fiz", "test", "foo"
+      ))
+      self.rollback()
+      self.init_tree()
       self.test_get((
          ("key", "new_value"),
          ("test", "true"),
@@ -42,9 +51,16 @@ class BinaryTreeTests:
    def set(self, key_value_pairs):
       for key, value in key_value_pairs:
          self.tree.set(key, value)
+      
+   def delete(self, keys):
+      for key in keys:
+         self.tree.delete(key)
 
    def commit(self):
       self.tree.commit()
+   
+   def rollback(self):
+      self.tree.rollback()
 
    def test_delete(self, keys, not_keys):
       for key in keys:

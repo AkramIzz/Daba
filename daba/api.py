@@ -9,6 +9,9 @@ class Daba:
    def commit(self):
       self._tree.commit()
 
+   def rollback(self):
+      self._tree.rollback()
+
    def __getitem__(self, key):
       return self._tree.get(key)
 
