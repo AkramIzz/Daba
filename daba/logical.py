@@ -24,7 +24,7 @@ class LogicalBase:
 
    def get(self, key):
       if not self._storage.is_locked():
-            self._retrieve_root()
+         self._retrieve_root()
       value_ref = self._retrieve(self._get(self.root_ref, key))
       if value_ref is None:
          return None
@@ -47,6 +47,10 @@ class LogicalBase:
          self._storage.write_root_address(self.root_ref.address)
          self._storage.unlock_root()
       
+      self._storage.unlock()
+      self.root_ref = None
+
+   def rollback(self):
       self._storage.unlock()
       self.root_ref = None
 
