@@ -51,6 +51,7 @@ class Storage:
       self._file.seek(0, os.SEEK_END)
       if self._file.tell() >= self.ROOT_BLOCK_SIZE:
          # root block exists. No furthur actions needed
+         self.unlock()
          return
          
       self._file.write(b'\x00' * self.ROOT_BLOCK_SIZE)
